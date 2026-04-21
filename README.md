@@ -11,4 +11,16 @@ These tools are used alongside the Dyninst mutator for all the additional tasks.
 These tools are tested and developed on ROCm 6.0.0 and GFX908.
 
 ## Building
-	```cmake /path/to/amd_gpu_tools -DROCM_PATH=/path/to/rocm/install```
+	```
+	cmake /path/to/amd_gpu_tools -DROCM_PATH=/path/to/rocm/install
+	```
+
+## Running
+
+  ```
+  instr-driver <dyninst-mutator> <host-executable>
+  ```
+
+The host executable contains the host code and the fat binary which contains device code.
+
+Ensure that the build directory for these tools is appended to `PATH`
