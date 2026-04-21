@@ -5,6 +5,9 @@
 // usage:
 // update-note-phdr <og-bin> <new-bin>
 
+// This tool makes the note section loadable by setting its virtual address and mapping it to the
+// note segment.
+
 static void showHelp(const char *toolName) {
   std::cout << "usage : \n";
   std::cout << "  ";

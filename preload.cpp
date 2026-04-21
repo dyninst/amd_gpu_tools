@@ -12,10 +12,10 @@
 #include <unordered_map>
 
 // Environment variable for the instrumentation variable table path:
-const char *instrumentationVariableTableEnv = "DYNINST_AMDGPU_INSTRUMENTATON_VAR_TABLE";
+static const char *instrumentationVariableTableEnv = "DYNINST_AMDGPU_INSTRUMENTATON_VAR_TABLE";
 
 // Environment variable for the instrumented kernel names path:
-const char *instrumentedKernelNamesEnv = "DYNINST_AMDGPU_INSTRUMENTED_KERNEL_NAMES";
+static const char *instrumentedKernelNamesEnv = "DYNINST_AMDGPU_INSTRUMENTED_KERNEL_NAMES";
 
 // This will be used to print the names and values of the instrumentation variables after the kernel launch is done and the instrumentation variables are copied back.
 struct InstrumentationVarTableEntry {
@@ -30,23 +30,23 @@ struct InstrumentationVarTableEntry {
   }
 };
 
-std::unordered_map<std::string, int> &getKernargSizeMap() {
+static std::unordered_map<std::string, int> &getKernargSizeMap() {
   static std::unordered_map<std::string, int> instance;
   return instance;
 }
 
-std::unordered_map<std::string, int> &getFirstHiddenArgIndexMap() {
+static std::unordered_map<std::string, int> &getFirstHiddenArgIndexMap() {
   static std::unordered_map<std::string, int> instance;
   return instance;
 }
 
-std::vector<InstrumentationVarTableEntry> &getInstrumentationVarTableEntries() {
+static std::vector<InstrumentationVarTableEntry> &getInstrumentationVarTableEntries() {
   static std::vector<InstrumentationVarTableEntry> instance;
   return instance;
 }
 
 // Read words from a string
-void getWords(const std::string &str, std::vector<std::string> &words) {
+static void getWords(const std::string &str, std::vector<std::string> &words) {
   std::stringstream ss(str);
   std::string word;
   while (ss >> word) {
@@ -58,7 +58,7 @@ void getWords(const std::string &str, std::vector<std::string> &words) {
 //  offset -> instrumentation variable name
 
 // The table is sorted by offset
-void readInstrumentedVarTable(const std::string &filePath) {
+static void readInstrumentedVarTable(const std::string &filePath) {
   auto &tableEntries = getInstrumentationVarTableEntries();
   std::ifstream tableFile(filePath);
   std::string line;
@@ -84,7 +84,7 @@ void readInstrumentedVarTable(const std::string &filePath) {
 // We extend the kernel signature to take an additional argument, which is the memory holding
 // instrumentation variables. The map will be used to update the kernarg signature with a
 // bigger kernarg buffer size, to accomodate for the additional argument.
-void readPreloadInfo(const std::string &filePath) {
+static void readPreloadInfo(const std::string &filePath) {
   auto &kernargSizeMap = getKernargSizeMap();
   auto &firstHiddenArgIndexMap = getFirstHiddenArgIndexMap();
 

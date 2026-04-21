@@ -65,7 +65,7 @@ static void getgpuBinInfos(const std::string &fatbinPath, std::vector<GpuBinInfo
   fatbin.close();
 }
 
-void dumpInfos(std::vector<GpuBinInfo> &infos) {
+static void dumpInfos(std::vector<GpuBinInfo> &infos) {
   for (auto &info : infos)
     info.dump(std::cout);
 }

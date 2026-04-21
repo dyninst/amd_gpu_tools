@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 
-void showHelp(const std::string &toolName) {
+static void showHelp(const std::string &toolName) {
   std::cerr << "Usage : " << toolName << " <arch-name> "
             << "<path-to-fatbin>" << std::endl;
   std::cerr << "supported architectures : gfx900, gfx906, gfx908, gfx90a, gfx940" << std::endl;

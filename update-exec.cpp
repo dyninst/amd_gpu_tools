@@ -14,8 +14,8 @@
 // update-exec <og-exec> <fatbin> <new-exec>
 
 // These maps are for correcting the section links in the clone.
-std::unordered_map<ELFIO::section *, ELFIO::section *> ogToNewSectionMap;
-std::unordered_map<ELFIO::section *, ELFIO::section *> newToOgSectionMap;
+static std::unordered_map<ELFIO::section *, ELFIO::section *> ogToNewSectionMap;
+static std::unordered_map<ELFIO::section *, ELFIO::section *> newToOgSectionMap;
 
 static void showHelp(const char *toolName) {
   std::cout << "usage : \n";
@@ -47,7 +47,7 @@ static void dumpSection(const ELFIO::section *section, bool printContents = true
 
 // === SECTION-GETTING HELPERS BEGIN ===
 //
-ELFIO::section *getSection(const std::string &sectionName, const ELFIO::elfio &file) {
+static ELFIO::section *getSection(const std::string &sectionName, const ELFIO::elfio &file) {
   for (int i = 0; i < file.sections.size(); ++i) {
     if (file.sections[i]->get_name() == sectionName)
       return file.sections[i];
@@ -55,11 +55,11 @@ ELFIO::section *getSection(const std::string &sectionName, const ELFIO::elfio &f
   return nullptr;
 }
 
-ELFIO::section *getFatbinSection(const ELFIO::elfio &file) {
+static ELFIO::section *getFatbinSection(const ELFIO::elfio &file) {
   return getSection(".hip_fatbin", file);
 }
 
-ELFIO::section *getFatbinWrapperSection(const ELFIO::elfio &file) {
+static ELFIO::section *getFatbinWrapperSection(const ELFIO::elfio &file) {
   return getSection(".hipFatBinSegment", file);
 }
 //
@@ -79,7 +79,7 @@ static size_t getFileSize(const std::string &filePath) {
   return size;
 }
 
-ELFIO::segment *getPtLoad1(const ELFIO::elfio &file) {
+static ELFIO::segment *getPtLoad1(const ELFIO::elfio &file) {
   for (int i = 0; i < file.segments.size(); ++i) {
     auto segment = file.segments[i];
     if (segment->get_type() == ELFIO::PT_LOAD)
@@ -88,7 +88,7 @@ ELFIO::segment *getPtLoad1(const ELFIO::elfio &file) {
   return nullptr;
 }
 
-ELFIO::segment *getPhdrSegment(const ELFIO::elfio &file) {
+static ELFIO::segment *getPhdrSegment(const ELFIO::elfio &file) {
   size_t entryPoint = file.get_entry();
   for (int i = 0; i < file.segments.size(); ++i) {
     auto segment = file.segments[i];
@@ -98,7 +98,7 @@ ELFIO::segment *getPhdrSegment(const ELFIO::elfio &file) {
   return nullptr;
 }
 
-ELFIO::segment *getLastSegment(const ELFIO::elfio &execFile) {
+static ELFIO::segment *getLastSegment(const ELFIO::elfio &execFile) {
   const size_t numSegments = execFile.segments.size();
   assert(numSegments != 0);
 
@@ -121,7 +121,7 @@ ELFIO::segment *getLastSegment(const ELFIO::elfio &execFile) {
   return lastSegment;
 }
 
-void cloneHeader(const ELFIO::elfio &ogExec, ELFIO::elfio &newExec) {
+static void cloneHeader(const ELFIO::elfio &ogExec, ELFIO::elfio &newExec) {
   newExec.create(ogExec.get_class(), ogExec.get_encoding());
   newExec.set_os_abi(ogExec.get_os_abi());
   newExec.set_abi_version(ogExec.get_abi_version());
@@ -130,7 +130,7 @@ void cloneHeader(const ELFIO::elfio &ogExec, ELFIO::elfio &newExec) {
   newExec.set_entry(ogExec.get_entry());
 }
 
-bool shouldClone(const ELFIO::section *section) {
+static bool shouldClone(const ELFIO::section *section) {
   switch (section->get_type()) {
   case ELFIO::SHT_NULL:
     return false;
@@ -146,7 +146,7 @@ bool shouldClone(const ELFIO::section *section) {
   }
 }
 
-void cloneSections(const ELFIO::elfio &ogExec, ELFIO::elfio &newExec) {
+static void cloneSections(const ELFIO::elfio &ogExec, ELFIO::elfio &newExec) {
   auto ogSections = ogExec.sections;
   for (size_t i = 0; i < ogSections.size(); ++i) {
     ELFIO::section *ogSection = ogSections[i];
@@ -181,7 +181,7 @@ void cloneSections(const ELFIO::elfio &ogExec, ELFIO::elfio &newExec) {
   }
 }
 
-void correctSectionLinks(const ELFIO::elfio &ogExec, ELFIO::elfio &newExec) {
+static void correctSectionLinks(const ELFIO::elfio &ogExec, ELFIO::elfio &newExec) {
   auto ogSections = ogExec.sections;
   auto newSections = newExec.sections;
 
@@ -209,7 +209,7 @@ void correctSectionLinks(const ELFIO::elfio &ogExec, ELFIO::elfio &newExec) {
   }
 }
 
-void cloneSegments(const ELFIO::elfio &ogExec, ELFIO::elfio &newExec) {
+static void cloneSegments(const ELFIO::elfio &ogExec, ELFIO::elfio &newExec) {
   auto ogSegments = ogExec.segments;
   for (size_t i = 0; i < ogSegments.size(); ++i) {
     ELFIO::segment *ogSegment = ogSegments[i];
@@ -247,14 +247,14 @@ void cloneSegments(const ELFIO::elfio &ogExec, ELFIO::elfio &newExec) {
   }
 }
 
-void cloneExec(const ELFIO::elfio &ogExec, ELFIO::elfio &newExec) {
+static void cloneExec(const ELFIO::elfio &ogExec, ELFIO::elfio &newExec) {
   cloneHeader(ogExec, newExec);
   cloneSections(ogExec, newExec);
   correctSectionLinks(ogExec, newExec);
   cloneSegments(ogExec, newExec);
 }
 
-void updateFatbinAddr(ELFIO::elfio &execFile, uint64_t newAddr) {
+static void updateFatbinAddr(ELFIO::elfio &execFile, uint64_t newAddr) {
   ELFIO::section *fatbinWrapperSection = getFatbinWrapperSection(execFile);
 
   // address is at offset 8.
@@ -264,7 +264,7 @@ void updateFatbinAddr(ELFIO::elfio &execFile, uint64_t newAddr) {
 
 // Create a .new_fatbin section, map it to a new PT_LOAD segment, update the
 // fatbin wrapper.
-void addNewFatbin(ELFIO::elfio &newExec, const char *newFatbinContent, size_t newFatbinSize) {
+static void addNewFatbin(ELFIO::elfio &newExec, const char *newFatbinContent, size_t newFatbinSize) {
 
   ELFIO::section *fatbinSection = getFatbinSection(newExec);
   assert(fatbinSection);
@@ -306,7 +306,7 @@ void addNewFatbin(ELFIO::elfio &newExec, const char *newFatbinContent, size_t ne
 // hence keeping the include here.
 #include <elf.h>
 
-void patchExec(const char *rwExecPath) {
+static void patchExec(const char *rwExecPath) {
   ELFIO::elfio newExecFile;
   FILE *rawNewElf = fopen(rwExecPath, "rb+");
 
