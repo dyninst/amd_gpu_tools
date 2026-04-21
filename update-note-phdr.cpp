@@ -35,7 +35,7 @@ static void dumpSection(const ELFIO::section *section, bool printContents = true
   std::cout << std::dec << '\n';
 }
 
-ELFIO::section *getSection(const std::string &sectionName, const ELFIO::elfio &file) {
+static ELFIO::section *getSection(const std::string &sectionName, const ELFIO::elfio &file) {
   for (int i = 0; i < file.sections.size(); ++i) {
     if (file.sections[i]->get_name() == sectionName)
       return file.sections[i];
@@ -43,9 +43,9 @@ ELFIO::section *getSection(const std::string &sectionName, const ELFIO::elfio &f
   return nullptr;
 }
 
-ELFIO::section *getNoteSection(const ELFIO::elfio &file) { return getSection(".note", file); }
+static ELFIO::section *getNoteSection(const ELFIO::elfio &file) { return getSection(".note", file); }
 
-ELFIO::segment *getNoteSegment(const ELFIO::elfio &file) {
+static ELFIO::segment *getNoteSegment(const ELFIO::elfio &file) {
   for (int i = 0; i < file.segments.size(); ++i) {
     auto segment = file.segments[i];
     if (segment->get_type() == ELFIO::PT_NOTE)

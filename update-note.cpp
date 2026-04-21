@@ -28,7 +28,7 @@ static constexpr uint32_t DYNINST_ARG_SIZE = 8;
 
 // Create a new argument, which is pointer to the Dyninst's memory buffer for
 // variables
-void createNewArgument(std::map<std::string, msgpack::object> &newArgument, int offset,
+static void createNewArgument(std::map<std::string, msgpack::object> &newArgument, int offset,
                        msgpack::zone &z) {
   newArgument[".name"] = msgpack::object(std::string("dyninst_mem"), z);
   newArgument[".address_space"] = msgpack::object(std::string("global"), z);
@@ -84,7 +84,7 @@ static std::string readNoteFile(const std::string &fileName) {
   return std::string(buffer.str());
 }
 
-void rewriteNotes(const std::string &fileName, const std::string& newFileName, std::vector<KernelInfo> &instrumentedKernelInfos) {
+static void rewriteNotes(const std::string &fileName, const std::string& newFileName, std::vector<KernelInfo> &instrumentedKernelInfos) {
   // Step 1 - read .note file into buffer
   std::string noteBuffer = readNoteFile(fileName);
 
@@ -201,7 +201,7 @@ void rewriteNotes(const std::string &fileName, const std::string& newFileName, s
   outFile.close();
 }
 
-void readInstrumentedKernelInfos(const std::string &filePath,
+static void readInstrumentedKernelInfos(const std::string &filePath,
                                  std::vector<KernelInfo> &instrumentedKernelInfos) {
   std::ifstream file(filePath);
   std::string word;
@@ -216,7 +216,7 @@ void readInstrumentedKernelInfos(const std::string &filePath,
   file.close();
 }
 
-void writeUpdatedKernelInfos(const std::string &filePath,
+static void writeUpdatedKernelInfos(const std::string &filePath,
                              std::vector<KernelInfo> &instrumentedKernelInfos) {
   std::ofstream file(filePath);
   assert(file.is_open());
