@@ -11,13 +11,6 @@
 // 1. Adding an additional argument for Dyninst's instrumentation variables
 // 2. Maxing out SGPR allocation.
 
-static bool startsWith(const std::string &prefix, const std::string &str) {
-  if (prefix.length() > str.length())
-    return false;
-
-  return str.substr(0, prefix.length()) == prefix;
-}
-
 struct KernelInfo {
   std::string name;
   unsigned newKernargBufferSize;
@@ -61,14 +54,14 @@ static void createNewArgumentList(std::vector<msgpack::object> &ogArgumentList,
     ogArgumentList[i].convert(arg);
     msgpack::object valueKindObject = arg[".value_kind"];
     valueKindObject.convert(valueKind);
-    if (startsWith("hidden", valueKind)) {
+    if (valueKind.starts_with("hidden")) {
       break;
     }
     newArgumentList.push_back(ogArgumentList[i]);
   }
 
   // Now we are at the first hidden arg.
-  assert(i < ogArgumentList.size() && startsWith("hidden", valueKind));
+  assert(i < ogArgumentList.size() && valueKind.starts_with("hidden"));
   kernelInfo.firstHiddenArgIndex = i;
 
   std::map<std::string, msgpack::object> newArg;
