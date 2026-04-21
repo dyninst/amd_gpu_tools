@@ -51,7 +51,7 @@ set(PRELOAD_SO "${CMAKE_CURRENT_BINARY_DIR}/preload.so")
 add_custom_command(
   OUTPUT "${PRELOAD_SO}"
   COMMAND ${HIPCC} -D__HIP_PLATFORM_AMD__ -x c++ -shared -fpic
-          -I/opt/rocm-6.0.0/include/ "${PRELOAD_SOURCE}" -o "${PRELOAD_SO}"
+          -I"${ROCM_PATH}"/include/ "${PRELOAD_SOURCE}" -o "${PRELOAD_SO}"
   DEPENDS "${PRELOAD_SOURCE}"
   COMMENT "Building ${PRELOAD_SOURCE} with ${HIPCC}"
   VERBATIM)
