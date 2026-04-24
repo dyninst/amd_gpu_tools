@@ -24,11 +24,16 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  char buffer[24 + 1];
-  fatbin.read(buffer, 24);
-  buffer[24] = 0;
+  // This is at the beginning of the clang-offload-bundle file.
+  // See https://clang.llvm.org/docs/ClangOffloadBundler.html
+  constexpr std::string_view magicString("__CLANG_OFFLOAD_BUNDLE__");
+  constexpr uint32_t magicStringLength = magicString.length();
 
-  assert(std::string(buffer) == "__CLANG_OFFLOAD_BUNDLE__");
+  char buffer[magicStringLength + 1];
+  fatbin.read(buffer, magicStringLength);
+  buffer[magicStringLength] = 0;
+
+  assert(std::string(buffer) == magicString);
 
   uint64_t numBundleEntries = 0;
   fatbin.read(reinterpret_cast<char *>(&numBundleEntries), sizeof(numBundleEntries));
@@ -49,10 +54,10 @@ int main(int argc, char *argv[]) {
     uint64_t idLength;
     fatbin.read(reinterpret_cast<char *>(&idLength), sizeof(idLength));
 
-    char id[idLength];
-    fatbin.read(id, idLength);
+    std::string idString;
+    idString.resize(idLength);
+    fatbin.read(&idString[0], idLength);
 
-    std::string idString(id);
     // If idString ends with arch
     if (idString.substr(idLength - arch.length()) == arch) {
       elfStart = bundleEntryCodeObjectOffset;
@@ -64,14 +69,15 @@ int main(int argc, char *argv[]) {
 
   if (!found) {
     std::cerr << fatbinPath << " doesn't contain a " << arch << " binary\n";
-    exit(0);
+    exit(1);
   }
 
   // std::cout << arch << ' ' << "ELF at " << elfStart << " of size " << elfSize << '\n';
 
   fatbin.seekg(elfStart, std::ios::beg);
-  char data[elfSize];
-  fatbin.read(data, elfSize);
+  std::string data;
+  data.resize(elfSize);
+  fatbin.read(&data[0], elfSize);
 
   std::string elfBinPath(fatbinPath + "." + arch);
   std::ofstream elfBin(elfBinPath, std::ios::binary);
@@ -81,8 +87,5 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  elfBin.write(data, elfSize);
-  elfBin.close();
-
-  fatbin.close();
+  elfBin.write(&data[0], elfSize);
 }
