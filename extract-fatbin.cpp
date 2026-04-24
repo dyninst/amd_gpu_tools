@@ -24,13 +24,13 @@ int main(int argc, char **argv) {
 
   ELFIO::elfio execFile;
   if (!execFile.load(argv[1])) {
-    std::cout << "can't find or process ELF file " << argv[1] << '\n';
+    std::cerr << "can't find or process ELF file " << argv[1] << '\n';
     exit(1);
   }
 
   ELFIO::section *fatbinSection = getFatbinSection(execFile);
   if (!fatbinSection) {
-    std::cout << ".hip_fatbin section not found in " << argv[1] << "\n";
+    std::cerr << ".hip_fatbin section not found in " << argv[1] << "\n";
     exit(1);
   }
 
@@ -38,7 +38,6 @@ int main(int argc, char **argv) {
   std::ofstream fatbinFile(std::string(argv[1]) + ".fatbin", std::ios::out | std::ios::binary);
 
   fatbinFile.write(fatbinSection->get_data(), fatbinSection->get_size());
-  fatbinFile.close();
 
   return 0;
 }
