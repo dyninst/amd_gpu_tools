@@ -5,9 +5,10 @@
 #include "elfio/elfio.hpp"
 
 static ELFIO::section *getSection(const std::string &sectionName, const ELFIO::elfio &file) {
-  for (int i = 0; i < file.sections.size(); ++i) {
-    if (file.sections[i]->get_name() == sectionName)
-      return file.sections[i];
+  for (const auto &section: file.sections)  {
+    if (section->get_name() == sectionName) {
+      return section.get();
+    }
   }
   return nullptr;
 }
