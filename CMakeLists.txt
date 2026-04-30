@@ -3,6 +3,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic")
+set(CMAKE_C_FLAGS "-Wall -Wextra -pedantic")
+
 set(ROCM_PATH
     ""
     CACHE PATH "Path to ROCm install directory")
