@@ -69,14 +69,18 @@ static void getgpuBinInfos(const std::string &fatbinPath, std::vector<GpuBinInfo
   fatbin.close();
 }
 
-static void dumpInfos(std::vector<GpuBinInfo> &infos) {
-  for (auto &info : infos)
-    info.dump(std::cout);
-}
+// Commenting out to prevent unused function warning as this can be used later if we
+// add log levels for debugging
+//
+// static void dumpInfos(std::vector<GpuBinInfo> &infos) {
+//   for (auto &info : infos)
+//     info.dump(std::cout);
+// }
 
 static int getIndex(const std::string &arch, const std::vector<GpuBinInfo> &infos) {
   int index = -1;
-  for (int i = 0; i < infos.size(); ++i) {
+  int infosLength = static_cast<int>(infos.size());
+  for (int i = 0; i < infosLength; ++i) {
     const GpuBinInfo &info = infos[i];
     size_t idLength = info.id.length();
     if (info.id.substr(idLength - arch.length()) == arch) {
@@ -140,7 +144,7 @@ int main(int argc, char *argv[]) {
   // respect the alignment when updating the offsets.
   newBinInfos[archIndex].size = elfBinSize;
 
-  for (int i = archIndex + 1; i < newBinInfos.size(); ++i) {
+  for (size_t i = archIndex + 1; i < newBinInfos.size(); ++i) {
     GpuBinInfo prevInfo = newBinInfos[i - 1];
     if (prevInfo.offset + prevInfo.size > newBinInfos[i].offset) {
       newBinInfos[i].offset = alignUp(prevInfo.offset + prevInfo.size, 0x1000);
@@ -201,17 +205,17 @@ int main(int argc, char *argv[]) {
 
     // Write padding before we start writing the ELF files
     pos = newFatbin.tellp();
-    offset = static_cast<int>(pos - std::streampos(0));
+    offset = static_cast<uint64_t>(pos - std::streampos(0));
 
     uint64_t paddingCount = alignUp(offset, 0x1000) - offset;
     std::vector<char> padding(paddingCount, 0);
     newFatbin.write(padding.data(), paddingCount);
 
     pos = newFatbin.tellp();
-    offset = static_cast<int>(pos - std::streampos(0));
+    offset = static_cast<uint64_t>(pos - std::streampos(0));
 
     // std::cout << offset << ' ' << gpuBinInfos[i].offset << '\n';
-    assert(offset == newBinInfos[i].offset &&
+    assert(static_cast<uint64_t>(offset) == newBinInfos[i].offset &&
            "Offset while writing ELF in new fatbin must match what we computed");
     newFatbin.write(buffer.c_str(), gpuBinInfos[i].size);
   }
@@ -233,10 +237,11 @@ int main(int argc, char *argv[]) {
   newFatbin.write(elfBinContents.c_str(), elfBinSize);
 
   // After archIndex
-  for (int i = archIndex + 1; i < gpuBinInfos.size(); ++i) {
-    char buffer[gpuBinInfos[i].size];
+  for (size_t i = archIndex + 1; i < gpuBinInfos.size(); ++i) {
+    std::string buffer;
+    buffer.resize(gpuBinInfos[i].size);
     fatbin.seekg(gpuBinInfos[i].offset, std::ios::beg);
-    fatbin.read(buffer, gpuBinInfos[i].size);
+    fatbin.read(&buffer[0], gpuBinInfos[i].size);
 
     pos = newFatbin.tellp();
     offset = static_cast<int>(pos - std::streampos(0));
@@ -249,9 +254,9 @@ int main(int argc, char *argv[]) {
     offset = static_cast<int>(pos - std::streampos(0));
 
     // std::cout << offset << ' ' << gpuBinInfos[i].offset << ' ' << newBinInfos[i].offset << '\n';
-    assert(offset == newBinInfos[i].offset &&
+    assert(static_cast<uint64_t>(offset) == newBinInfos[i].offset &&
            "Offset while writing ELF in new fatbin must match what we computed");
-    newFatbin.write(buffer, gpuBinInfos[i].size);
+    newFatbin.write(buffer.c_str(), gpuBinInfos[i].size);
   }
 
   fatbin.close();
