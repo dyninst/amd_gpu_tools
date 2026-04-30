@@ -142,12 +142,14 @@ int main(int argc, char *argv[]) {
   // If the binary we want to "replace" is followed by other binaries, we must
   // update their offsets. Since all offsets are 0x1000 (i.e 4096) aligned we also
   // respect the alignment when updating the offsets.
+
+  constexpr uint64_t alignment = 0x1000;
   newBinInfos[archIndex].size = elfBinSize;
 
   for (size_t i = archIndex + 1; i < newBinInfos.size(); ++i) {
     GpuBinInfo prevInfo = newBinInfos[i - 1];
     if (prevInfo.offset + prevInfo.size > newBinInfos[i].offset) {
-      newBinInfos[i].offset = alignUp(prevInfo.offset + prevInfo.size, 0x1000);
+      newBinInfos[i].offset = alignUp(prevInfo.offset + prevInfo.size, alignment);
     }
   }
 
@@ -207,7 +209,7 @@ int main(int argc, char *argv[]) {
     pos = newFatbin.tellp();
     offset = static_cast<uint64_t>(pos - std::streampos(0));
 
-    uint64_t paddingCount = alignUp(offset, 0x1000) - offset;
+    uint64_t paddingCount = alignUp(offset, alignment) - offset;
     std::vector<char> padding(paddingCount, 0);
     newFatbin.write(padding.data(), paddingCount);
 
@@ -224,7 +226,7 @@ int main(int argc, char *argv[]) {
   pos = newFatbin.tellp();
   offset = static_cast<int>(pos - std::streampos(0));
 
-  uint64_t newBinPaddingCount = alignUp(offset, 0x1000) - offset;
+  uint64_t newBinPaddingCount = alignUp(offset, alignment) - offset;
   std::cout << "padding for instrumented bin = " << newBinPaddingCount << " bytes\n";
 
   std::vector<char> newBinPadding(newBinPaddingCount, ' ');
@@ -246,7 +248,7 @@ int main(int argc, char *argv[]) {
     pos = newFatbin.tellp();
     offset = static_cast<int>(pos - std::streampos(0));
 
-    uint64_t paddingCount = alignUp(offset, 0x1000) - offset;
+    uint64_t paddingCount = alignUp(offset, alignment) - offset;
     std::vector<char> padding(paddingCount, 0);
     newFatbin.write(padding.data(), paddingCount);
 
