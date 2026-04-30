@@ -17,7 +17,7 @@ endif()
 set(CMAKE_C_COMPILER "${ROCM_PATH}/bin/amdclang")
 set(CMAKE_CXX_COMPILER "${ROCM_PATH}/bin/amdclang++")
 
-project(amdgpu-tooling LANGUAGES CXX)
+project(amd-gpu-tools LANGUAGES CXX)
 # ALL REGULAR TOOLS
 
 add_executable(update-note update-note.cpp)
