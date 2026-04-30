@@ -14,26 +14,29 @@ static void showHelp(const char *toolName) {
   std::cout << toolName << " <og-bin> <newbin>\n\n";
 }
 
-static void dumpSection(const ELFIO::section *section, bool printContents = true) {
-  assert(section && "section must be non-null");
-
-  std::cout << "section : " << section->get_name() << ", ";
-  std::cout << "size : " << section->get_size() << ", ";
-  std::cout << "offset : " << section->get_offset() << ", ";
-  std::cout << "addr-align : " << section->get_addr_align() << ", ";
-  std::cout << "entry-size : " << section->get_entry_size() << '\n';
-
-  if (!printContents)
-    return;
-
-  std::cout << "section contents :\n";
-
-  std::cout << std::hex;
-  for (int i = 0; i < section->get_size(); ++i) {
-    std::cout << (unsigned)section->get_data()[i] << ' ';
-  }
-  std::cout << std::dec << '\n';
-}
+// Commenting out to prevent unused function warning as this can be used later if we
+// add log levels for debugging
+//
+// static void dumpSection(const ELFIO::section *section, bool printContents = true) {
+//   assert(section && "section must be non-null");
+//
+//   std::cout << "section : " << section->get_name() << ", ";
+//   std::cout << "size : " << section->get_size() << ", ";
+//   std::cout << "offset : " << section->get_offset() << ", ";
+//   std::cout << "addr-align : " << section->get_addr_align() << ", ";
+//   std::cout << "entry-size : " << section->get_entry_size() << '\n';
+//
+//   if (!printContents)
+//     return;
+//
+//   std::cout << "section contents :\n";
+//
+//   std::cout << std::hex;
+//   for (size_t i = 0; i < section->get_size(); ++i) {
+//     std::cout << (unsigned)section->get_data()[i] << ' ';
+//   }
+//   std::cout << std::dec << '\n';
+// }
 
 static ELFIO::section *getSection(const std::string &sectionName, const ELFIO::elfio &file) {
   for (const auto &section: file.sections)  {
