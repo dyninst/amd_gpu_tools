@@ -39,7 +39,7 @@ static void dumpSection(const ELFIO::section *section, bool printContents = true
   std::cout << "section contents :\n";
 
   std::cout << std::hex;
-  for (int i = 0; i < section->get_size(); ++i) {
+  for (size_t i = 0; i < section->get_size(); ++i) {
     std::cout << (unsigned)section->get_data()[i] << ' ';
   }
   std::cout << std::dec << '\n';
@@ -90,7 +90,6 @@ static ELFIO::segment *getPtLoad1(const ELFIO::elfio &file) {
 }
 
 static ELFIO::segment *getPhdrSegment(const ELFIO::elfio &file) {
-  size_t entryPoint = file.get_entry();
   for (int i = 0; i < file.segments.size(); ++i) {
     auto segment = file.segments[i];
     if (segment->get_type() == ELFIO::PT_PHDR)
