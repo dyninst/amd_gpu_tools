@@ -4,6 +4,10 @@
 #include <string>
 #include <vector>
 
+// Magic string at the beginning of the bundle
+static std::string magicStr("__CLANG_OFFLOAD_BUNDLE__");
+
+
 struct GpuBinInfo {
   GpuBinInfo(const std::string &id_, uint64_t offset_, uint64_t size_)
       : id(id_), offset(offset_), size(size_) {}
@@ -32,11 +36,11 @@ static void getgpuBinInfos(const std::string &fatbinPath, std::vector<GpuBinInfo
     exit(1);
   }
 
-  char buffer[24 + 1];
-  fatbin.read(buffer, 24);
-  buffer[24] = 0;
+  std::string buffer;
+  buffer.resize(magicStr.length());
+  fatbin.read(&buffer[0], magicStr.length());
 
-  assert(std::string(buffer) == "__CLANG_OFFLOAD_BUNDLE__");
+  assert(std::string(buffer) == magicStr);
 
   uint64_t numBundleEntries = 0;
   fatbin.read(reinterpret_cast<char *>(&numBundleEntries), sizeof(numBundleEntries));
@@ -52,9 +56,9 @@ static void getgpuBinInfos(const std::string &fatbinPath, std::vector<GpuBinInfo
     uint64_t idLength;
     fatbin.read(reinterpret_cast<char *>(&idLength), sizeof(idLength));
 
-    char id[idLength + 1];
-    fatbin.read(id, idLength);
-    id[idLength] = 0; // Make id null-terminated
+    std::string id;
+    id.resize(idLength);
+    fatbin.read(&id[0], idLength);
 
     GpuBinInfo info(id, bundleEntryCodeObjectOffset, size);
     infos.push_back(info);
@@ -123,9 +127,10 @@ int main(int argc, char *argv[]) {
 
   std::cout << "elfBinSize = " << elfBinSize << '\n';
 
-  char elfBinContents[elfBinSize];
+  std::string elfBinContents;
+  elfBinContents.resize(elfBinSize);
   elfBin.seekg(0, std::ios::beg);
-  elfBin.read(elfBinContents, elfBinSize);
+  elfBin.read(&elfBinContents[0], elfBinSize);
   elfBin.close();
 
   std::vector<GpuBinInfo> newBinInfos(gpuBinInfos);
@@ -153,8 +158,6 @@ int main(int argc, char *argv[]) {
   }
 
   // "write" doesn't write null-terminated strings
-  // Magic string
-  std::string magicStr = "__CLANG_OFFLOAD_BUNDLE__";
   newFatbin.write(magicStr.c_str(), magicStr.size());
 
   assert(gpuBinInfos.size() == newBinInfos.size());
@@ -191,9 +194,10 @@ int main(int argc, char *argv[]) {
 
   // Writing upto archIndex
   for (int i = 0; i < archIndex; ++i) {
-    char buffer[gpuBinInfos[i].size];
+    std::string buffer;
+    buffer.resize(gpuBinInfos[i].size);
     fatbin.seekg(gpuBinInfos[i].offset, std::ios::beg);
-    fatbin.read(buffer, gpuBinInfos[i].size);
+    fatbin.read(&buffer[0], gpuBinInfos[i].size);
 
     // Write padding before we start writing the ELF files
     pos = newFatbin.tellp();
@@ -209,7 +213,7 @@ int main(int argc, char *argv[]) {
     // std::cout << offset << ' ' << gpuBinInfos[i].offset << '\n';
     assert(offset == newBinInfos[i].offset &&
            "Offset while writing ELF in new fatbin must match what we computed");
-    newFatbin.write(buffer, gpuBinInfos[i].size);
+    newFatbin.write(buffer.c_str(), gpuBinInfos[i].size);
   }
 
   // The instrumented gpubin
@@ -226,7 +230,7 @@ int main(int argc, char *argv[]) {
   offset = static_cast<int>(pos - std::streampos(0));
 
   std::cout << "writing instrumented bin at offset " << offset << '\n';
-  newFatbin.write(elfBinContents, elfBinSize);
+  newFatbin.write(elfBinContents.c_str(), elfBinSize);
 
   // After archIndex
   for (int i = archIndex + 1; i < gpuBinInfos.size(); ++i) {
