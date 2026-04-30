@@ -49,7 +49,7 @@ static void createNewArgumentList(std::vector<msgpack::object> &ogArgumentList,
                            unsigned newKernargBufferSize, msgpack::zone &z, KernelInfo &kernelInfo) {
   std::map<std::string, msgpack::object> arg;
   std::string valueKind;
-  int i = 0;
+  size_t i = 0;
   for (; i < ogArgumentList.size(); ++i) {
     ogArgumentList[i].convert(arg);
     msgpack::object valueKindObject = arg[".value_kind"];
@@ -221,7 +221,7 @@ static void writeUpdatedKernelInfos(const std::string &filePath,
   std::ofstream file(filePath);
   assert(file.is_open());
 
-  for (auto const kernelInfo : instrumentedKernelInfos) {
+  for (auto const &kernelInfo : instrumentedKernelInfos) {
     file << kernelInfo.name << ' ' << kernelInfo.newKernargBufferSize << ' '
          << kernelInfo.firstHiddenArgIndex << '\n';
   }
