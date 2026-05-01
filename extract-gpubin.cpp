@@ -5,18 +5,19 @@
 
 static void showHelp(const std::string &toolName) {
   std::cerr << "Usage : " << toolName << " <arch-name> "
-            << "<path-to-fatbin>" << std::endl;
+            << "<path-to-fatbin>" << " <path-to-output-gpubin>" << std::endl;
   std::cerr << "supported architectures : gfx900, gfx906, gfx908, gfx90a, gfx940" << std::endl;
 }
 
 int main(int argc, char *argv[]) {
-  if (argc != 3) {
+  if (argc != 4) {
     showHelp(argv[0]);
     exit(1);
   }
 
   std::string arch(argv[1]);
   std::string fatbinPath(argv[2]);
+  std::string gpubinPath(argv[3]);
 
   std::ifstream fatbin(fatbinPath, std::ios::binary);
   if (!fatbin) {
@@ -79,11 +80,10 @@ int main(int argc, char *argv[]) {
   data.resize(elfSize);
   fatbin.read(&data[0], elfSize);
 
-  std::string elfBinPath(fatbinPath + "." + arch);
-  std::ofstream elfBin(elfBinPath, std::ios::binary);
+  std::ofstream elfBin(gpubinPath, std::ios::binary);
 
   if (!elfBin) {
-    std::cerr << "error : can't create " << elfBinPath << std::endl;
+    std::cerr << "error : can't create " << gpubinPath << std::endl;
     exit(1);
   }
 

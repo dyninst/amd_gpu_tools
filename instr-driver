@@ -29,7 +29,7 @@ NOTE_OUT=$NOTE_IN.expanded
 extract-fatbin $EXEC_IN $FATBIN
 
 # 2. Extract gfx908 bin. This will output $GPUBIN
-extract-gpubin gfx908 $FATBIN
+extract-gpubin gfx908 $FATBIN $GPUBIN
 
 # 3. Run the mutator, instrument kernels (also use the information from step 3).
 # This will also emit a file containing list of instrumented kernels ($NAMES_FILE)
