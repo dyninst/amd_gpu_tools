@@ -63,7 +63,7 @@ update-note-phdr $GPUBIN_UPDATED_NOTE $GPUBIN_FINAL
 
 # 6. Update original fatbin with instrumented gpu binary ($GPUBIN_FINAL)
 # This will emit $FATBIN_UPDATED
-update-fatbin gfx908 $GPUBIN_FINAL $FATBIN
+update-fatbin gfx908 $GPUBIN_FINAL $FATBIN $FATBIN_UPDATED
 
 # 7. Update the original executable ($EXEC_IN) by embedding $FATBIN_UPDATED
 # This will emit $EXEC_UPDATED

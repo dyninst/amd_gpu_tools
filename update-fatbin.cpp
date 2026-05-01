@@ -24,9 +24,9 @@ struct GpuBinInfo {
 static void showHelp(const std::string &toolName) {
   std::cerr << "Usage : " << toolName << " <arch-name> "
             << " <path-to-elf> "
-            << "<path-to-fatbin>" << std::endl;
+            << "<path-to-fatbin>" << " <path-to-output-fatbin>" << std::endl;
   std::cerr << "supported architectures : gfx900, gfx906, gfx908, gfx90a, gfx940" << std::endl;
-  std::cerr << "This tool create a fat binary containing an instrumented GPU binary" << std::endl;
+  std::cerr << "This tool creates a fat binary containing an instrumented GPU binary" << std::endl;
 }
 
 static void getgpuBinInfos(const std::string &fatbinPath, std::vector<GpuBinInfo> &infos) {
@@ -99,7 +99,7 @@ static uint64_t alignUp(uint64_t value, uint64_t alignment) {
 }
 
 int main(int argc, char *argv[]) {
-  if (argc != 4) {
+  if (argc != 5) {
     showHelp(argv[0]);
     exit(1);
   }
@@ -107,6 +107,7 @@ int main(int argc, char *argv[]) {
   std::string arch(argv[1]);
   std::string elfBinPath(argv[2]);
   std::string fatbinPath(argv[3]);
+  std::string outputFatbinPath(argv[4]);
 
   std::vector<GpuBinInfo> gpuBinInfos;
   getgpuBinInfos(fatbinPath, gpuBinInfos);
@@ -157,7 +158,7 @@ int main(int argc, char *argv[]) {
   // dumpInfos(newBinInfos);
 
   // Now we create a new fatbin
-  std::ofstream newFatbin(fatbinPath + ".updated", std::ios::binary);
+  std::ofstream newFatbin(outputFatbinPath, std::ios::binary);
   if (!newFatbin) {
     std::cerr << "error : can't open new fatbin" << std::endl;
     exit(1);
