@@ -26,7 +26,7 @@ NOTE_IN=$GPUBIN.note
 NOTE_OUT=$NOTE_IN.expanded
 
 # 1. Extract fatbin. This will output a $FATBIN
-extract-fatbin $EXEC_IN
+extract-fatbin $EXEC_IN $FATBIN
 
 # 2. Extract gfx908 bin. This will output $GPUBIN
 extract-gpubin gfx908 $FATBIN
