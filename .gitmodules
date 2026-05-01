@@ -1,0 +1,8 @@
+[submodule "third-party/msgpack-c"]
+	path = third-party/msgpack-c
+	url = https://github.com/msgpack/msgpack-c.git
+	branch = cpp_master
+[submodule "third-party/ELFIO"]
+	path = third-party/ELFIO
+	url = https://github.com/serge1/ELFIO.git
+	branch = main
