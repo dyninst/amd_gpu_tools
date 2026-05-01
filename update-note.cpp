@@ -229,23 +229,24 @@ static void writeUpdatedKernelInfos(const std::string &filePath,
 }
 
 int main(int argc, char *argv[]) {
-  if (argc != 3) {
-    printf("usage expand_args <.names file> <.note file>\n");
+  if (argc != 5) {
+    std::cerr << "usage : "<< argv[0] << " <input-names-file>"
+              << " <input-note-file> <output-note-file> <output-preload-info-file-path>\n";
     return -1;
   }
 
-  std::string namesFile(argv[1]);
-  std::string noteFile(argv[2]);
-  std::string updatedNoteFile(noteFile + ".expanded");
+  std::string namesPath(argv[1]);
+  std::string notePath(argv[2]);
+  std::string updatedNotePath(argv[3]);
+  std::string outputPreloadInfoPath(argv[4]);
 
   std::vector<KernelInfo> instrumentedKernelInfos;
-  readInstrumentedKernelInfos(namesFile, instrumentedKernelInfos);
+  readInstrumentedKernelInfos(namesPath, instrumentedKernelInfos);
 
-  rewriteNotes(noteFile, updatedNoteFile, instrumentedKernelInfos);
+  rewriteNotes(notePath, updatedNotePath, instrumentedKernelInfos);
 
   // The preload library will read this
-  std::string preloadNamesFile = namesFile + ".preload";
-  writeUpdatedKernelInfos(preloadNamesFile, instrumentedKernelInfos);
+  writeUpdatedKernelInfos(outputPreloadInfoPath, instrumentedKernelInfos);
 
   return 0;
 }

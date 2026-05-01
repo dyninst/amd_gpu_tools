@@ -23,7 +23,9 @@ GPUBIN_FINAL=$GPUBIN.final
 NAMES_FILE=$GPUBIN.instrumentedKernelNames
 
 NOTE_IN=$GPUBIN.note
-NOTE_OUT=$NOTE_IN.expanded
+NOTE_OUT=$NOTE_IN.updated
+
+PRELOAD_NAMES=$NAMES_FILE.preload
 
 # 1. Extract fatbin. This will output a $FATBIN
 extract-fatbin $EXEC_IN $FATBIN
@@ -48,8 +50,8 @@ llvm-objcopy --dump-section=.note=$NOTE_IN $GPUBIN
 # 5.2 For each instrumented kernel, modify the metadata as follows:
 # - Expand the kernarg buffer with 1 additional argument, which the additional memory that we will allocate via the host.
 # - Increase SGPR usage to 112 (GFX908 only for now)
-# This will emit $NOTE_OUT.
-update-note $NAMES_FILE $NOTE_IN
+# Outputs $NOTE_OUT and $PRELOAD_OUT
+update-note $NAMES_FILE $NOTE_IN $NOTE_OUT $PRELOAD_NAMES
 
 # 5.3 Copy the updated binary, remove the note section
 cp $GPUBIN_INSTR $GPUBIN_UPDATED_NOTE
