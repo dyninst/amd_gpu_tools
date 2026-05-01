@@ -28,55 +28,54 @@ NOTE_OUT=$NOTE_IN.updated
 PRELOAD_NAMES=$NAMES_FILE.preload
 
 # 1. Extract fatbin. This will output a $FATBIN
-extract-fatbin $EXEC_IN $FATBIN
+extract-fatbin "$EXEC_IN" "$FATBIN"
 
 # 2. Extract gfx908 bin. This will output $GPUBIN
-extract-gpubin gfx908 $FATBIN $GPUBIN
+extract-gpubin gfx908 "$FATBIN" "$GPUBIN"
 
 # 3. Run the mutator, instrument kernels (also use the information from step 3).
 # This will also emit a file containing list of instrumented kernels ($NAMES_FILE)
 # $MUTATOR -procedure-count $GPUBIN
-$MUTATOR  $GPUBIN
+"$MUTATOR" "$GPUBIN"
 
-# 4. Update kernel descriptors for instrumented kernels
-# This will produce $GPUBIN_UPDATED
-# update-kd $NAMES_FILE $GPUBIN_INSTR
-
-# 5. Modify the note metadata
+# 4. Modify the note metadata
 #
-# 5.1 Extract the note section from original binary
-llvm-objcopy --dump-section=.note=$NOTE_IN $GPUBIN
+# 4.1 Extract the note section from original binary
+llvm-objcopy --dump-section=.note="$NOTE_IN" "$GPUBIN"
 
-# 5.2 For each instrumented kernel, modify the metadata as follows:
-# - Expand the kernarg buffer with 1 additional argument, which the additional memory that we will allocate via the host.
+# 4.2 For each instrumented kernel, modify the metadata as follows:
+# - Update the kernarg signature with 1 additional argument, which is the additional memory
+#   that we will allocate via the host in the preload library.
 # - Increase SGPR usage to 112 (GFX908 only for now)
-# Outputs $NOTE_OUT and $PRELOAD_OUT
-update-note $NAMES_FILE $NOTE_IN $NOTE_OUT $PRELOAD_NAMES
+# Outputs $NOTE_OUT and $PRELOAD_NAMES
+update-note "$NAMES_FILE" "$NOTE_IN" "$NOTE_OUT" "$PRELOAD_NAMES"
 
-# 5.3 Copy the updated binary, remove the note section
-cp $GPUBIN_INSTR $GPUBIN_UPDATED_NOTE
-llvm-objcopy --remove-section=.note $GPUBIN_UPDATED_NOTE
+# 4.3 Copy the updated binary, remove the note section
+cp "$GPUBIN_INSTR" "$GPUBIN_UPDATED_NOTE"
+llvm-objcopy --remove-section=.note "$GPUBIN_UPDATED_NOTE"
 
-# 5.4 Add the expanded note section
-llvm-objcopy --add-section=.note=$NOTE_OUT $GPUBIN_UPDATED_NOTE
+# 4.4 Add the expanded note section
+llvm-objcopy --add-section=.note="$NOTE_OUT" "$GPUBIN_UPDATED_NOTE"
 
-# 5.5 Update the program header for the notes section
-update-note-phdr $GPUBIN_UPDATED_NOTE $GPUBIN_FINAL
+# 4.5 Update the program header for the notes section
+update-note-phdr "$GPUBIN_UPDATED_NOTE" "$GPUBIN_FINAL"
 
-# 6. Update original fatbin with instrumented gpu binary ($GPUBIN_FINAL)
+# 5. Update original fatbin with instrumented gpu binary ($GPUBIN_FINAL)
 # This will emit $FATBIN_UPDATED
-update-fatbin gfx908 $GPUBIN_FINAL $FATBIN $FATBIN_UPDATED
+update-fatbin gfx908 "$GPUBIN_FINAL" "$FATBIN" "$FATBIN_UPDATED"
 
-# 7. Update the original executable ($EXEC_IN) by embedding $FATBIN_UPDATED
+# 6. Update the original executable ($EXEC_IN) by embedding $FATBIN_UPDATED
 # This will emit $EXEC_UPDATED
-update-exec $EXEC_IN $FATBIN_UPDATED $EXEC_UPDATED
+update-exec "$EXEC_IN" "$FATBIN_UPDATED" "$EXEC_UPDATED"
 
-# 8. Rename fatbin sections so that roc-obj* tools work with the modified executable. Those tools specifically look for the .hip_fatbin section by name.
+# 7. Rename fatbin sections so that roc-obj* tools work with the modified executable.
+# Those tools specifically look for the .hip_fatbin section by name.
 # - Rename .hip_fatbin section to .old_fatbin
 # - Rename .new_fatbin section to .hip_fatbin
-# It is possible to do this within the update-exec tool, but doing it here is simpler and less error-prone
-llvm-objcopy --rename-section .hip_fatbin=.old_fatbin $EXEC_UPDATED $EXEC_RENAMED1
-llvm-objcopy --rename-section .new_fatbin=.hip_fatbin $EXEC_RENAMED1 $EXEC_RENAMED2
+# It is possible to do this within the update-exec tool, but doing it here is simpler
+# and less error-prone
+llvm-objcopy --rename-section .hip_fatbin=.old_fatbin "$EXEC_UPDATED" "$EXEC_RENAMED1"
+llvm-objcopy --rename-section .new_fatbin=.hip_fatbin "$EXEC_RENAMED1" "$EXEC_RENAMED2"
 
 cp $EXEC_RENAMED2 $EXEC_OUT
 
