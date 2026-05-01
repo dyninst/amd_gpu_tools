@@ -102,7 +102,7 @@ static void rewriteNotes(const std::string &fileName, const std::string& newFile
   uint32_t offset = 0;
 
   // Step 2 - parse the ELF note header. This is not msgpack header.
-  // First 4 bytes  : Size of the Name str (should be AMDGPU\0)
+  // First 4 bytes  : Size of the Name str (should be strlen(AMDGPU\0))
   // Second 4 bytes : Size of the note in msgpack format
   // Third 4 bytes  : Type of the note (should be 32)
   // Followed by the Name str
